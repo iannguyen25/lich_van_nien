@@ -26,7 +26,7 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     emit(CalendarLoading());
     try {
       final List<CalendarEventModel> events = await getCalendarEvents(event.year, event.month);
-      emit(CalendarLoaded(events: events));
+      emit(CalendarLoaded(events: events)); // Đảm bảo rằng trạng thái CalendarLoaded được cập nhật
     } catch (e) {
       emit(CalendarError(message: 'Failed to fetch calendar events: ${e.toString()}'));
     }
@@ -35,16 +35,16 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
   Future<void> _onConvertDate(ConvertDate event, Emitter<CalendarState> emit) async {
     try {
       LunarDate lunarDate = convertSolarToLunar(event.solarDate);
-      emit(LunarDateConverted(lunarDate: lunarDate)); // Đảm bảo rằng lớp này đã được định nghĩa
+      emit(LunarDateConverted(lunarDate: lunarDate));
     } catch (e) {
       emit(CalendarError(message: 'Failed to convert date: ${e.toString()}'));
     }
   }
 
   Future<void> _onSaveEvent(SaveEvent event, Emitter<CalendarState> emit) async {
-    emit(CalendarLoading()); // Thêm trạng thái đang lưu
+    emit(CalendarLoading());
     try {
-      await calendarRepository.saveEvent(event.calendarEvent as CalendarEventModel);
+      await calendarRepository.saveEvent(event.calendarEvent);
       emit(EventSaved());
       add(FetchCalendarEvents(event.year, event.month)); // Cập nhật để lấy lại sự kiện
     } catch (e) {
@@ -57,11 +57,11 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
 // ignore: must_be_immutable
 class SaveEvent extends CalendarEvent {
   final CalendarEventModel calendarEvent;
-  int year = DateTime.now().year;
-  int month = DateTime.now().month;
+  int year;
+  int month;
 
   SaveEvent(this.calendarEvent, this.month, this.year);
 
   @override
-  List<Object> get props => [calendarEvent];
+  List<Object> get props => [calendarEvent, year, month]; // Thêm year và month vào props
 }

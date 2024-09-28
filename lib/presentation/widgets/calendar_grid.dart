@@ -4,8 +4,16 @@ import '../../data/models/calendar_event.dart';
 class CalendarGrid extends StatelessWidget {
   final List<CalendarEventModel> events;
   final Function(String) onDayTap;
+  final int selectedYear; // Thêm tham số này
+  final int selectedMonth; // Thêm tham số này
 
-  const CalendarGrid({super.key, required this.events, required this.onDayTap});
+  const CalendarGrid({
+    super.key,
+    required this.events,
+    required this.onDayTap,
+    required this.selectedYear,
+    required this.selectedMonth,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -75,9 +83,11 @@ class CalendarGrid extends StatelessWidget {
 
   // Placeholder logic for solar dates
   String _getSolarDate(int index) {
-    final day = (index % 30) + 1;
-    return day.toString();
-  }
+  final currentDate = DateTime(selectedYear, selectedMonth, 1);
+  final targetDate = currentDate.add(Duration(days: index - currentDate.weekday + 1));
+  return targetDate.day.toString();
+}
+
 
   // Placeholder logic for lunar dates
   String _getLunarDate(int index) {
@@ -86,8 +96,15 @@ class CalendarGrid extends StatelessWidget {
   }
 
   // Logic to check if a date has events
-  bool isEventDay(String date) {
-    List<String> eventDates = ['2', '10', '17', '28']; // Example event dates
-    return eventDates.contains(date);
-  }
+  // Logic to check if a date has events
+bool isEventDay(String date) {
+  // Lấy danh sách ngày từ events
+  List<String> eventDates = events
+      .where((event) => event.startTime.day.toString() == date &&
+                        event.startTime.month == selectedMonth &&
+                        event.startTime.year == selectedYear)
+      .map((event) => event.startTime.day.toString())
+      .toList();
+  return eventDates.contains(date);
+}
 }

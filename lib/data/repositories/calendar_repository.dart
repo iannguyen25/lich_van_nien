@@ -26,9 +26,27 @@ class CalendarRepository {
   Future<List<CalendarEventModel>> fetchCalendarEvents(int year, int month) async {
     // Giả lập một số sự kiện
     return [
-      CalendarEventModel(id: '1', title: 'Sự kiện 1', startTime: DateTime(year, month, 1), endTime: DateTime(year, month, 1), description: ''),
-      CalendarEventModel(id: '2', title: 'Sự kiện 2', startTime: DateTime(year, month, 15), endTime: DateTime(year, month, 15), description: ''),
-      CalendarEventModel(id: '3', title: 'Sự kiện 3', startTime: DateTime(year, month, 20), endTime: DateTime(year, month, 20), description: ''),
+      CalendarEventModel(
+        id: '1',
+        title: 'Sự kiện 1',
+        startTime: DateTime(year, month, 1),
+        endTime: DateTime(year, month, 1, 23, 59),
+        description: '',
+      ),
+      CalendarEventModel(
+        id: '2',
+        title: 'Sự kiện 2',
+        startTime: DateTime(year, month, 15),
+        endTime: DateTime(year, month, 15, 23, 59),
+        description: '',
+      ),
+      CalendarEventModel(
+        id: '3',
+        title: 'Sự kiện 3',
+        startTime: DateTime(year, month, 20),
+        endTime: DateTime(year, month, 20, 23, 59),
+        description: '',
+      ),
     ];
   }
 }

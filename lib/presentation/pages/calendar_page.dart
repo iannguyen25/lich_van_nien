@@ -25,40 +25,28 @@ class CalendarPageState extends State<CalendarPage> {
   @override
   void initState() {
     super.initState();
+    _fetchEvents(); // Tải sự kiện cho tháng và năm hiện tại
+  }
+
+  void _fetchEvents() {
     context.read<CalendarBloc>().add(FetchCalendarEvents(selectedYear, selectedMonth));
   }
 
   @override
   Widget build(BuildContext context) {
-    // Lấy trạng thái của Bloc
-    final state = context.watch<CalendarBloc>().state;
-
-    // Kiểm tra trạng thái và lấy sự kiện
-    List<CalendarEventModel> events = [];
-    if (state is CalendarLoaded) {
-      events = state.events; // Chỉ lấy sự kiện từ trạng thái CalendarLoaded
-    }
-
     return Scaffold(
       appBar: AppBar(
-        title: const Center(
-          child: Text('Lịch vạn niên', style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            // color: Color.fromARGB(0, 179, 232, 207),
-          ),),
-        ),
-        // backgroundColor:const Color.fromARGB(0, 232, 186, 179),
+        title: const Text('Chọn tháng và năm'),
       ),
       body: Column(
         children: [
-          // Dropdown and buttons row
+          // Đoạn mã cho Dropdown và button
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Previous month button
+                // Nút tháng trước
                 IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () {
@@ -69,11 +57,11 @@ class CalendarPageState extends State<CalendarPage> {
                       } else {
                         selectedMonth--;
                       }
-                      context.read<CalendarBloc>().add(FetchCalendarEvents(selectedYear, selectedMonth));
+                      _fetchEvents();
                     });
                   },
                 ),
-                // Month Dropdown
+                // Dropdown cho tháng
                 DropdownButton<int>(
                   value: selectedMonth,
                   items: List.generate(12, (index) {
@@ -82,16 +70,14 @@ class CalendarPageState extends State<CalendarPage> {
                       child: Text(months[index]),
                     );
                   }),
-                  isExpanded: false,
-                  menuMaxHeight: 150,
                   onChanged: (int? newMonth) {
                     setState(() {
                       selectedMonth = newMonth!;
-                      context.read<CalendarBloc>().add(FetchCalendarEvents(selectedYear, selectedMonth));
+                      _fetchEvents(); // Tải sự kiện mới
                     });
                   },
                 ),
-                // Year Dropdown
+                // Dropdown cho năm
                 DropdownButton<int>(
                   value: selectedYear,
                   items: List.generate(20, (index) {
@@ -100,16 +86,14 @@ class CalendarPageState extends State<CalendarPage> {
                       child: Text((DateTime.now().year - 10 + index).toString()),
                     );
                   }),
-                  isExpanded: false,
-                  menuMaxHeight: 150,
                   onChanged: (int? newYear) {
                     setState(() {
                       selectedYear = newYear!;
-                      context.read<CalendarBloc>().add(FetchCalendarEvents(selectedYear, selectedMonth));
+                      _fetchEvents(); // Tải sự kiện mới
                     });
                   },
                 ),
-                // Next month button
+                // Nút tháng tiếp theo
                 IconButton(
                   icon: const Icon(Icons.arrow_forward),
                   onPressed: () {
@@ -120,69 +104,74 @@ class CalendarPageState extends State<CalendarPage> {
                       } else {
                         selectedMonth++;
                       }
-                      context.read<CalendarBloc>().add(FetchCalendarEvents(selectedYear, selectedMonth));
+                      _fetchEvents(); // Tải sự kiện mới
                     });
                   },
                 ),
               ],
             ),
           ),
-          // Xem button
+          // Nút "Xem"
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 5.0),
             child: ElevatedButton(
               onPressed: () {
-                // Load the selected month's data
-                setState(() {
-                  context.read<CalendarBloc>().add(FetchCalendarEvents(selectedYear, selectedMonth));
-                });
+                _fetchEvents(); // Gọi lại để tải sự kiện mới
               },
               child: const Text('Xem'),
             ),
           ),
-          // Calendar Grid
+          // Hiển thị danh sách sự kiện
+          const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(child: Center(child: Text('Thứ 2'))),
+              Expanded(child: Center(child: Text('Thứ 3'))),
+              Expanded(child: Center(child: Text('Thứ 4'))),
+              Expanded(child: Center(child: Text('Thứ 5'))),
+              Expanded(child: Center(child: Text('Thứ 6'))),
+              Expanded(child: Center(child: Text('Thứ 7'))),
+              Expanded(child: Center(child: Text('CN'))),
+            ],
+          ),
+        ),
           Expanded(
             flex: 3,
-            child: CalendarGrid(
-              events: events,
-              onDayTap: (String selectedDay) {
-                // Handle day tap navigation to EventDetailsPage
-                final eventsForDay = events
-                    .where((event) => event.startTime.day.toString() == selectedDay &&
-                                      event.startTime.month == selectedMonth &&
-                                      event.startTime.year == selectedYear)
-                    .toList();
+            child: BlocBuilder<CalendarBloc, CalendarState>(
+              builder: (context, state) {
+                if (state is CalendarLoading) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (state is CalendarLoaded) {
+                  final events = state.events;
+                  return CalendarGrid(
+                    events: events,
+                    selectedYear: selectedYear, // Truyền selectedYear
+                    selectedMonth: selectedMonth, // Truyền selectedMonth
+                    onDayTap: (String selectedDay) {
+                      final eventsForDay = events
+                          .where((event) => event.startTime.day.toString() == selectedDay &&
+                                            event.startTime.month == selectedMonth &&
+                                            event.startTime.year == selectedYear)
+                          .toList();
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EventDetailsPage(
-                      selectedDate: '$selectedDay/$selectedMonth/$selectedYear',
-                      events: eventsForDay.map((e) => e.title).toList(), // Chỉ lấy tiêu đề
-                    ),
-                  ),
-                );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EventDetailsPage(
+                            selectedDate: '$selectedDay/$selectedMonth/$selectedYear',
+                            events: eventsForDay.map((e) => e.title).toList(),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                } else if (state is CalendarError) {
+                  return Center(child: Text('Có lỗi: ${state.message}'));
+                }
+                return const Center(child: Text('Không có sự kiện nào')); // Trả về thông báo nếu không có sự kiện
               },
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Danh sách sự kiện',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          // Event List
-          const Expanded(
-            flex: 2,
-            child: Center(
-              child: Text('Nhấn vào một ngày để xem sự kiện chi tiết'),
             ),
           ),
         ],
