@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../data/models/calendar_event.dart';
+import 'package:lich_van_nien/data/models/calendar_event.dart';
+import 'package:lich_van_nien/core/utils/lunar_solar_converter.dart';
+import 'package:lunar/calendar/Lunar.dart';
+import 'package:lunar/calendar/Solar.dart';
 
 class CalendarGrid extends StatelessWidget {
   final List<CalendarEventModel> events;
   final Function(String) onDayTap;
-  final int selectedYear; // Thêm tham số này
-  final int selectedMonth; // Thêm tham số này
+  final int selectedYear; // Thêm biến selectedYear
+  final int selectedMonth; // Thêm biến selectedMonth
 
   const CalendarGrid({
     super.key,
@@ -28,8 +31,8 @@ class CalendarGrid extends StatelessWidget {
       itemCount: 42, // Total cells (7 days * 6 rows)
       itemBuilder: (context, index) {
         final String solarDate = _getSolarDate(index); // Get solar date
-        final String lunarDate = _getLunarDate(index); // Get lunar date
-        final bool isToday = solarDate == '28'; // Example logic for today's date
+        final lunarDate = _getLunarDate(int.parse(solarDate), selectedYear, selectedMonth); // Lấy lịch âm
+        final bool isToday = solarDate == DateTime.now().day.toString(); // Logic kiểm tra ngày hôm nay
 
         return GestureDetector(
           onTap: () {
@@ -63,7 +66,7 @@ class CalendarGrid extends StatelessWidget {
                       color: Colors.grey[600],
                     ),
                   ),
-                  if (isEventDay(solarDate)) // Example logic to show a dot under dates with events
+                  if (isEventDay(solarDate)) // Show a dot under dates with events
                     const Padding(
                       padding: EdgeInsets.only(top: 4.0),
                       child: Icon(
@@ -83,28 +86,25 @@ class CalendarGrid extends StatelessWidget {
 
   // Placeholder logic for solar dates
   String _getSolarDate(int index) {
-  final currentDate = DateTime(selectedYear, selectedMonth, 1);
-  final targetDate = currentDate.add(Duration(days: index - currentDate.weekday + 1));
-  return targetDate.day.toString();
-}
+    final day = (index % 30) + 1;
+    return day.toString();
+  }
 
-
-  // Placeholder logic for lunar dates
-  String _getLunarDate(int index) {
-    final lunarDay = (index % 30) + 1;
-    return lunarDay == 1 ? "1/8" : lunarDay.toString(); // Example lunar month "1/8" for new month
+  // Logic to get lunar date using the conversion function
+  String _getLunarDate(int solarDay, int year, int month) {
+    final solarDate = DateTime(year, month, solarDay); // Lấy ngày dương
+    final lunarDate = convertSolarToLunar(solarDate); // Chuyển đổi sang âm
+    return '${lunarDate.getDay()}/${lunarDate.getMonth()}'; // Trả về định dạng chuỗi
   }
 
   // Logic to check if a date has events
-  // Logic to check if a date has events
-bool isEventDay(String date) {
-  // Lấy danh sách ngày từ events
-  List<String> eventDates = events
-      .where((event) => event.startTime.day.toString() == date &&
-                        event.startTime.month == selectedMonth &&
-                        event.startTime.year == selectedYear)
-      .map((event) => event.startTime.day.toString())
-      .toList();
-  return eventDates.contains(date);
-}
+  bool isEventDay(String date) {
+    List<String> eventDates = ['2', '10', '17', '28']; // Example event dates
+    return eventDates.contains(date);
+  }
+
+  static Lunar convertSolarToLunar(DateTime solarDate) {
+    Solar solar = Solar.fromDate(solarDate);
+    return solar.getLunar();
+  }
 }
