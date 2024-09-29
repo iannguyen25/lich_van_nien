@@ -29,13 +29,14 @@ class ConvertDate extends CalendarEvent {
   List<Object> get props => [solarDate];
 }
 
-// Sự kiện để lưu sự kiện
+// ignore: must_be_immutable
 class SaveEvent extends CalendarEvent {
   final CalendarEventModel calendarEvent;
-  final int year; // thêm tham số year
+  int year;
+  int month;
 
-  const SaveEvent(this.calendarEvent, this.year); // thêm year vào constructor
+  SaveEvent(this.calendarEvent, this.month, this.year);
 
   @override
-  List<Object> get props => [calendarEvent, year]; // thêm year vào props
+  List<Object> get props => [calendarEvent, year, month]; // Thêm year và month vào props
 }

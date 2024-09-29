@@ -5,9 +5,34 @@ class CalendarRepository {
   final LocalStorage localStorage;
 
   CalendarRepository({required this.localStorage});
+  // Giả sử chúng ta đang sử dụng một danh sách trong bộ nhớ để lưu trữ sự kiện
+  final List<CalendarEventModel> _events = [];
 
   Future<void> saveEvent(CalendarEventModel event) async {
-    await localStorage.saveEvent(event.toJson());
+  print('Saving event: ${event.title}'); // Debug print
+  _events.add(event); // Lưu vào danh sách tạm thời
+  
+  // Lưu vào SharedPreferences
+  await localStorage.saveEvent(event.toJson());
+}
+
+Future<void> loadEventsFromLocal() async {
+  final localEvents = await localStorage.getEvents();
+  _events.clear();
+  _events.addAll(localEvents.map((e) => CalendarEventModel.fromJson(e)).toList());
+}
+
+
+Future<List<CalendarEventModel>> getEvents(int year, int month) async {
+  print('Getting events for $month/$year'); // Debug print
+  // Lọc sự kiện cho tháng và năm cụ thể
+  return _events.where((event) =>
+      event.startTime.year == year && event.startTime.month == month).toList();
+}
+
+
+  Future<void> deleteEvent(String eventId) async {
+    await localStorage.deleteEvent(eventId);
   }
 
   Future<List<CalendarEventModel>> getLocalEvents() async {
@@ -17,10 +42,6 @@ class CalendarRepository {
     } catch (e) {
       throw Exception('Failed to load events: $e');
     }
-  }
-
-  Future<void> deleteEvent(String eventId) async {
-    await localStorage.deleteEvent(eventId);
   }
 
   Future<List<CalendarEventModel>> fetchCalendarEvents(int year, int month) async {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lich_van_nien/data/models/calendar_event.dart';
 import 'package:lich_van_nien/presentation/blocs/calendar/calendar_state.dart';
 import '../blocs/calendar/calendar_bloc.dart';
 import '../blocs/calendar/calendar_event.dart';
@@ -142,35 +141,28 @@ class CalendarPageState extends State<CalendarPage> {
             child: BlocBuilder<CalendarBloc, CalendarState>(
               builder: (context, state) {
                 if (state is CalendarLoading) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (state is CalendarLoaded) {
                   final events = state.events;
                   return CalendarGrid(
                     events: events,
-                    selectedYear: selectedYear, // Truyền selectedYear
-                    selectedMonth: selectedMonth, // Truyền selectedMonth
+                    selectedYear: selectedYear,
+                    selectedMonth: selectedMonth,
                     onDayTap: (String selectedDay) {
-                      final eventsForDay = events
-                          .where((event) => event.startTime.day.toString() == selectedDay &&
-                                            event.startTime.month == selectedMonth &&
-                                            event.startTime.year == selectedYear)
-                          .toList();
-
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => EventDetailsPage(
                             selectedDate: '$selectedDay/$selectedMonth/$selectedYear',
-                            events: eventsForDay.map((e) => e.title).toList(),
                           ),
                         ),
-                      );
+                      ).then((_) => _fetchEvents()); // Refresh when returning from EventDetailsPage
                     },
                   );
                 } else if (state is CalendarError) {
                   return Center(child: Text('Có lỗi: ${state.message}'));
                 }
-                return const Center(child: Text('Không có sự kiện nào')); // Trả về thông báo nếu không có sự kiện
+                return const Center(child: Text('Không có sự kiện nào'));
               },
             ),
           ),

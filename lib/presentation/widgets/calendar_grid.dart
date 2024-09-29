@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:lich_van_nien/data/models/calendar_event.dart';
 import 'package:lich_van_nien/core/utils/lunar_solar_converter.dart';
-import 'package:lunar/calendar/Lunar.dart';
-import 'package:lunar/calendar/Solar.dart';
+import 'package:lich_van_nien/data/models/calendar_event.dart';
 
 class CalendarGrid extends StatelessWidget {
   final List<CalendarEventModel> events;
   final Function(String) onDayTap;
-  final int selectedYear; // Thêm biến selectedYear
-  final int selectedMonth; // Thêm biến selectedMonth
+  final int selectedYear;
+  final int selectedMonth;
 
   const CalendarGrid({
     super.key,
@@ -20,63 +18,54 @@ class CalendarGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final firstDayOfMonth = DateTime(selectedYear, selectedMonth, 1);
+    final daysInMonth = DateTime(selectedYear, selectedMonth + 1, 0).day;
+    final firstWeekday = firstDayOfMonth.weekday;
+
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 7, // 7 days in a week
-        childAspectRatio: 1, // Keep the cells square
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
+        crossAxisCount: 7,
+        childAspectRatio: 0.85,
+        crossAxisSpacing: 4,
+        mainAxisSpacing: 4,
       ),
-      itemCount: 42, // Total cells (7 days * 6 rows)
+      itemCount: 42,
       itemBuilder: (context, index) {
-        final String solarDate = _getSolarDate(index); // Get solar date
-        final lunarDate = _getLunarDate(int.parse(solarDate), selectedYear, selectedMonth); // Lấy lịch âm
-        final bool isToday = solarDate == DateTime.now().day.toString(); // Logic kiểm tra ngày hôm nay
+        final int day = index - firstWeekday + 2;
+        if (day < 1 || day > daysInMonth) {
+          return Container(); // Empty cell for days outside the current month
+        }
+
+        final solarDate = DateTime(selectedYear, selectedMonth, day);
+        final lunarDate = LunarSolarConverter.convertSolarToLunar(solarDate);
+        final bool isToday = _isToday(solarDate);
+        final bool hasEvent = _hasEvent(solarDate);
 
         return GestureDetector(
-          onTap: () {
-            onDayTap(solarDate); // Pass the tapped solar date
-          },
+          onTap: () => onDayTap(day.toString()),
           child: Container(
             decoration: BoxDecoration(
-              color: isToday ? Colors.orange[200] : Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: Colors.grey[400]!,
-                width: 1.0,
-              ),
+              color: _getBackgroundColor(isToday, hasEvent),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: Colors.grey[400]!, width: 1.0),
             ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    solarDate, // Display the solar date
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isToday ? Colors.orange : Colors.black,
-                    ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  day.toString(),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isToday ? Colors.white : Colors.black,
                   ),
-                  Text(
-                    lunarDate, // Display the lunar date
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  if (isEventDay(solarDate)) // Show a dot under dates with events
-                    const Padding(
-                      padding: EdgeInsets.only(top: 4.0),
-                      child: Icon(
-                        Icons.circle,
-                        size: 6,
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                ],
-              ),
+                ),
+                Text(
+                  '${lunarDate.getDay()}/${lunarDate.getMonth()}',
+                  style: TextStyle(fontSize: 10, color: isToday ? Colors.white70 : Colors.grey[600]),
+                ),
+              ],
             ),
           ),
         );
@@ -84,27 +73,21 @@ class CalendarGrid extends StatelessWidget {
     );
   }
 
-  // Placeholder logic for solar dates
-  String _getSolarDate(int index) {
-    final day = (index % 30) + 1;
-    return day.toString();
+  Color _getBackgroundColor(bool isToday, bool hasEvent) {
+    if (isToday) return Colors.blue;
+    if (hasEvent) return Colors.orange[200]!;
+    return Colors.white;
   }
 
-  // Logic to get lunar date using the conversion function
-  String _getLunarDate(int solarDay, int year, int month) {
-    final solarDate = DateTime(year, month, solarDay); // Lấy ngày dương
-    final lunarDate = convertSolarToLunar(solarDate); // Chuyển đổi sang âm
-    return '${lunarDate.getDay()}/${lunarDate.getMonth()}'; // Trả về định dạng chuỗi
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year && date.month == now.month && date.day == now.day;
   }
 
-  // Logic to check if a date has events
-  bool isEventDay(String date) {
-    List<String> eventDates = ['2', '10', '17', '28']; // Example event dates
-    return eventDates.contains(date);
-  }
-
-  static Lunar convertSolarToLunar(DateTime solarDate) {
-    Solar solar = Solar.fromDate(solarDate);
-    return solar.getLunar();
+  bool _hasEvent(DateTime date) {
+    return events.any((event) =>
+        event.startTime.year == date.year &&
+        event.startTime.month == date.month &&
+        event.startTime.day == date.day);
   }
 }
