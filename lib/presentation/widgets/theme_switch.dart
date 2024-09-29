@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lich_van_nien/presentation/blocs/theme/theme_bloc.dart';
 
-class ThemeSwitch extends StatefulWidget {
+class ThemeSwitch extends StatelessWidget {
   const ThemeSwitch({super.key});
 
   @override
-  _ThemeSwitchState createState() => _ThemeSwitchState();
-}
-
-class _ThemeSwitchState extends State<ThemeSwitch> {
-  bool _isDarkMode = false;
-
-  @override
   Widget build(BuildContext context) {
-    return Switch(
-      value: _isDarkMode,
-      onChanged: (value) {
-        setState(() {
-          _isDarkMode = value;
-        });
+    return BlocBuilder<ThemeBloc, ThemeState>(
+      builder: (context, state) {
+        final isDarkMode = state.themeData.brightness == Brightness.dark;
+
+        return Switch(
+          value: isDarkMode,
+          onChanged: (value) {
+            BlocProvider.of<ThemeBloc>(context).add(ToggleThemeEvent(value));
+          },
+        );
       },
     );
   }

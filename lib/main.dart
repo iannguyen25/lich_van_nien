@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lich_van_nien/presentation/blocs/calendar/calendar_bloc.dart';
+import 'package:lich_van_nien/presentation/blocs/theme/theme_bloc.dart';
+import 'package:lich_van_nien/data/datasources/local/local_storage.dart';
+import 'package:lich_van_nien/data/repositories/calendar_repository.dart';
 import 'package:lich_van_nien/app.dart';
-import 'data/datasources/local/local_storage.dart';
-import 'data/repositories/calendar_repository.dart';
-import 'presentation/blocs/calendar/calendar_bloc.dart';
+import 'package:lich_van_nien/config/theme.dart'; // Import your theme configuration
+
 // Uncomment the following imports if using Firebase
 // import 'package:firebase_core/firebase_core.dart';
 // import 'services/auth_service.dart';
@@ -11,8 +14,26 @@ import 'presentation/blocs/calendar/calendar_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(); // Uncomment if using Firebase
-  runApp(const MyApp());
+
+  final themeBloc = ThemeBloc(); // Create an instance of ThemeBloc
+
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<CalendarBloc>(
+          create: (context) {
+            final localStorage = LocalStorage();
+            final calendarRepository = CalendarRepository(localStorage: localStorage);
+            return CalendarBloc(calendarRepository: calendarRepository);
+          },
+        ),
+        BlocProvider<ThemeBloc>(
+          create: (context) => themeBloc,
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -20,31 +41,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localStorage = LocalStorage();
-    final calendarRepository = CalendarRepository(localStorage: localStorage);
-
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<CalendarBloc>(
-          create: (context) => CalendarBloc(
-            // getCalendarEvents: GetCalendarEvents(calendarRepository: calendarRepository),
-            // convertSolarToLunar: ConvertSolarToLunar(),
-            calendarRepository: calendarRepository,
-          ),
-        ),
-        // Add other BlocProviders here if needed
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Lịch Vạn Niên',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        darkTheme: ThemeData.dark(),
-        themeMode: ThemeMode.system,
-        home: const App(),
-      ),
+    return BlocBuilder<ThemeBloc, ThemeState>(
+      builder: (context, state) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Lịch Vạn Niên',
+          theme: state.themeData,
+          darkTheme: getDarkTheme(),
+          themeMode: state.themeData.brightness == Brightness.dark
+              ? ThemeMode.dark
+              : ThemeMode.light,
+          home: const App(),
+        );
+      },
     );
   }
 }

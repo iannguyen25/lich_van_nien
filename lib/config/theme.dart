@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 ThemeData getLightTheme() {
   return ThemeData(
-    primarySwatch: Colors.blue,
+    primaryColor: Colors.blue,
     visualDensity: VisualDensity.adaptivePlatformDensity,
     textTheme: const TextTheme(
       bodyLarge: TextStyle(color: Colors.black, fontSize: 16), // Main body text
@@ -17,6 +17,8 @@ ThemeData getLightTheme() {
 
 ThemeData getDarkTheme() {
   return ThemeData.dark().copyWith(
+    primaryColor: Colors.blueGrey, // Example of a change
+
     // Customizing text theme for the dark theme
     textTheme: const TextTheme(
       bodyLarge: TextStyle(color: Colors.white, fontSize: 16), // Main body text
