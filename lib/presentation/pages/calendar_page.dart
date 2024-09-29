@@ -24,7 +24,7 @@ class CalendarPageState extends State<CalendarPage> {
   @override
   void initState() {
     super.initState();
-    _fetchEvents(); // Tải sự kiện cho tháng và năm hiện tại
+    _fetchEvents();
   }
 
   void _fetchEvents() {
@@ -115,7 +115,7 @@ class CalendarPageState extends State<CalendarPage> {
             padding: const EdgeInsets.symmetric(vertical: 5.0),
             child: ElevatedButton(
               onPressed: () {
-                _fetchEvents(); // Gọi lại để tải sự kiện mới
+                _fetchEvents(); 
               },
               child: const Text('Xem'),
             ),
@@ -156,7 +156,7 @@ class CalendarPageState extends State<CalendarPage> {
                             selectedDate: '$selectedDay/$selectedMonth/$selectedYear',
                           ),
                         ),
-                      ).then((_) => _fetchEvents()); // Refresh when returning from EventDetailsPage
+                      ).then((_) => _fetchEvents()); 
                     },
                   );
                 } else if (state is CalendarError) {

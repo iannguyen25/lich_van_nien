@@ -29,6 +29,28 @@ class ConvertDate extends CalendarEvent {
   List<Object> get props => [solarDate];
 }
 
+class DeleteEvent extends CalendarEvent {
+  final String eventId;
+  final int year;
+  final int month;
+
+  const DeleteEvent(this.eventId, this.month, this.year);
+
+  @override
+  List<Object> get props => [eventId, month, year];
+}
+
+class UpdateEvent extends CalendarEvent {
+  final CalendarEventModel updatedEvent;
+  final int year;
+  final int month;
+
+  const UpdateEvent(this.updatedEvent, this.month, this.year);
+
+  @override
+  List<Object> get props => [updatedEvent, month, year];
+}
+
 // ignore: must_be_immutable
 class SaveEvent extends CalendarEvent {
   final CalendarEventModel calendarEvent;
@@ -38,5 +60,5 @@ class SaveEvent extends CalendarEvent {
   SaveEvent(this.calendarEvent, this.month, this.year);
 
   @override
-  List<Object> get props => [calendarEvent, year, month]; // Thêm year và month vào props
+  List<Object> get props => [calendarEvent, year, month]; 
 }

@@ -19,6 +19,27 @@ class CalendarEventModel extends Equatable {
     this.color = '#000000',
   });
 
+  CalendarEventModel copyWith({
+    String? id,
+    String? title,
+    String? description,
+    DateTime? startTime,
+    DateTime? endTime,
+    bool? isLunar,
+    String? color,
+  }) {
+    return CalendarEventModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      isLunar: isLunar ?? this.isLunar,
+      color: color ?? this.color,
+    );
+  }
+
+
   factory CalendarEventModel.fromJson(Map<String, dynamic> json) {
     DateTime startTime = DateTime.parse(json['startTime']);
     DateTime endTime = DateTime.parse(json['endTime']);

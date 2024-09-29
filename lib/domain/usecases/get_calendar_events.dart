@@ -13,7 +13,7 @@ class GetCalendarEvents {
       // Lấy sự kiện từ API
       final eventsFromApi = await calendarRepository.fetchCalendarEvents(year, month);
       for (var event in eventsFromApi) {
-        eventMap[event.id] = event; // Sử dụng ID làm khóa
+        eventMap[event.id] = event; 
       }
     } catch (e) {
       print('Error fetching events from API: $e');
@@ -23,13 +23,12 @@ class GetCalendarEvents {
       // Lấy sự kiện từ local storage
       final localEvents = await calendarRepository.getLocalEvents();
       for (var event in localEvents) {
-        eventMap[event.id] = event; // Sử dụng ID làm khóa
+        eventMap[event.id] = event;
       }
     } catch (e) {
       print('Error fetching local events: $e');
     }
 
-    // Lấy danh sách sự kiện duy nhất từ Map
     return eventMap.values.toList();
   }
 }

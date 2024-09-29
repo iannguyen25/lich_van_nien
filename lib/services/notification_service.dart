@@ -4,16 +4,12 @@ class NotificationService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   Future<void> setupNotifications() async {
-    // Request permission to receive notifications
     await _requestPermission();
 
-    // Register to receive the notification token
     String? token = await _firebaseMessaging.getToken();
     print("Firebase Messaging Token: $token");
 
-    // Handle notifications when received
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      // Handle the received message
       print('Received a message: ${message.notification?.title}, ${message.notification?.body}');
     });
   }

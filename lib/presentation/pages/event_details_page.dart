@@ -58,9 +58,31 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 ? ListView.builder(
                     itemCount: events.length,
                     itemBuilder: (context, index) {
+                      final event = events[index];
                       return ListTile(
-                        title: Text(events[index].title),
-                        leading: const Icon(Icons.event),
+                        title: Text(event.title),
+                        subtitle: Text(event.description),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              _editEvent(context, event);
+                            } else if (value == 'delete') {
+                              _confirmDelete(context, event);
+                            }
+                          },
+                          itemBuilder: (BuildContext context) {
+                            return [
+                              const PopupMenuItem<String>(
+                                value: 'edit',
+                                child: Text('Sửa'),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'delete',
+                                child: Text('Xóa'),
+                              ),
+                            ];
+                          },
+                        ),
                       );
                     },
                   )
@@ -123,7 +145,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: eventTitle,
       startTime: eventDate,
-      endTime: eventDate, description: '',
+      endTime: eventDate,
+      description: '',
     );
 
     context.read<CalendarBloc>().add(SaveEvent(newEvent, eventDate.month, eventDate.year));
@@ -139,7 +162,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               child: const Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop();
-                // Sau khi đóng dialog, chúng ta sẽ pop trang hiện tại để quay lại trang lịch
                 Navigator.of(context).pop();
               },
             ),
@@ -147,7 +169,78 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         );
       },
     );
-    // Tải lại danh sách sự kiện
-    _loadEvents();
+  }
+
+  void _editEvent(BuildContext context, CalendarEventModel event) {
+    TextEditingController titleController = TextEditingController(text: event.title);
+    TextEditingController descriptionController = TextEditingController(text: event.description);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Sửa sự kiện'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'Tiêu đề'),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(labelText: 'Mô tả'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final updatedEvent = event.copyWith(
+                  title: titleController.text,
+                  description: descriptionController.text,
+                );
+                context.read<CalendarBloc>().add(UpdateEvent(updatedEvent, event.startTime.month, event.startTime.year));
+                Navigator.of(context).pop();
+              },
+              child: const Text('Lưu'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmDelete(BuildContext context, CalendarEventModel event) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Xác nhận'),
+          content: const Text('Bạn có chắc chắn muốn xóa sự kiện này?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<CalendarBloc>().add(DeleteEvent(event.id, event.startTime.month, event.startTime.year));
+                Navigator.of(context).pop();
+              },
+              child: const Text('Xóa'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

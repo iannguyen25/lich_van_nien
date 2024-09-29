@@ -34,7 +34,7 @@ class CalendarGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final int day = index - firstWeekday + 2;
         if (day < 1 || day > daysInMonth) {
-          return Container(); // Empty cell for days outside the current month
+          return Container();
         }
 
         final solarDate = DateTime(selectedYear, selectedMonth, day);

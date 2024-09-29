@@ -32,7 +32,7 @@ class AuthCubit extends Cubit<AuthState> {
       await userRepository.saveUser(user);
       emit(AuthLoaded(user));
     } catch (e) {
-      emit(AuthError('Failed to save user: ${e.toString()}'));
+      emit(AuthError('Lưu người dùng thất bại: ${e.toString()}'));
     }
   }
 
@@ -44,10 +44,10 @@ class AuthCubit extends Cubit<AuthState> {
       if (user != null) {
         emit(AuthLoaded(user));
       } else {
-        emit(AuthError('No user found'));
+        emit(AuthError('Không tìm thấy người dùng nào'));
       }
     } catch (e) {
-      emit(AuthError('Failed to load user: ${e.toString()}'));
+      emit(AuthError('Lỗi khi tải người dùng: ${e.toString()}'));
     }
   }
 
@@ -56,9 +56,9 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthLoading());
     try {
       await userRepository.deleteUser();
-      emit(AuthInitial()); // Reset state after deleting
+      emit(AuthInitial()); 
     } catch (e) {
-      emit(AuthError('Failed to delete user: ${e.toString()}'));
+      emit(AuthError('Lỗi khi xoá người dùng: ${e.toString()}'));
     }
   }
 
@@ -72,7 +72,7 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthInitial());
       }
     } catch (e) {
-      emit(AuthError('Failed to check auth status: ${e.toString()}'));
+      emit(AuthError('Lỗi khi kiểm tra trạng thái xác thực: ${e.toString()}'));
     }
   }
 }
