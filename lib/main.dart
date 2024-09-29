@@ -29,8 +29,8 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider<CalendarBloc>(
           create: (context) => CalendarBloc(
-            getCalendarEvents: GetCalendarEvents(calendarRepository: calendarRepository),
-            convertSolarToLunar: ConvertSolarToLunar(),
+            // getCalendarEvents: GetCalendarEvents(calendarRepository: calendarRepository),
+            // convertSolarToLunar: ConvertSolarToLunar(),
             calendarRepository: calendarRepository,
           ),
         ),
